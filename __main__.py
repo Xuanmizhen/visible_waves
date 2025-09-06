@@ -52,14 +52,13 @@ class SimpleHarmonicWave(MonoWave):
     """
     A class for representing simple harmonic waves.
     """
-    def __init__(self, frequency, dtype: np.dtype, framerate, duration, amplitude=None) -> None:
+    def __init__(self, frequency, dtype: np.dtype, framerate, duration, volume=1.0) -> None:
         dtype = np.dtype(dtype)
         if dtype.kind != "i":
             raise ValueError("dtype must be signed integer")
 
-        if amplitude is None:
-            amplitude = 2 ** (dtype.itemsize * 8 - 1) - 1
-
+        assert 0.0 <= volume <= 1.0 # TODO: raise an error instead
+        amplitude = (2 ** (dtype.itemsize * 8 - 1) - 1) * volume
         samples = np.arange(duration * framerate)
         samples = amplitude * np.sin(tau * frequency * samples / framerate)
         samples = np.round(samples).astype(dtype)
@@ -71,14 +70,13 @@ class SquareWave(MonoWave):
     """
     A class for representing square waves.
     """
-    def __init__(self, frequency, dtype: np.dtype, framerate, duration, amplitude: Union[None, float]=None) -> None:
+    def __init__(self, frequency, dtype: np.dtype, framerate, duration, volume=1.0) -> None:
         dtype = np.dtype(dtype)
         if dtype.kind != "i":
             raise ValueError("dtype must be signed integer")
-        
-        if amplitude is None:
-            amplitude = 2 ** (dtype.itemsize * 8 - 1) - 1
 
+        assert 0.0 <= volume <= 1.0 # TODO: raise an error instead
+        amplitude = (2 ** (dtype.itemsize * 8 - 1) - 1) * volume
         samples = np.arange(duration * framerate)
         samples_per_half_period = Fraction(1, frequency) * framerate / 2
         samples = np.where(samples // samples_per_half_period % 2 == 0, amplitude, -amplitude)
@@ -86,11 +84,12 @@ class SquareWave(MonoWave):
 
         super().__init__(samples, framerate)
 
+
 if __name__ == "__main__":
-    shwave = SimpleHarmonicWave(frequency=440, dtype=np.int8, framerate=44100, duration=1.0)
+    shwave = SimpleHarmonicWave(frequency=440, dtype=np.int8, framerate=44100, duration=1.0, volume=0.5)
     shwave.show(title="Simple Harmonic Wave")
     shwave.save("simple_harmonic.wav")
 
-    sqwave = SquareWave(frequency=440, dtype=np.int8, framerate=44100, duration=1.0)
+    sqwave = SquareWave(frequency=440, dtype=np.int8, framerate=44100, duration=1.0, volume=0.5)
     sqwave.show(title="Square Wave")
     sqwave.save("square.wav")
