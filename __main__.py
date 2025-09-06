@@ -17,7 +17,7 @@ class MonoWave:
 
         if samples.dtype.byteorder != '=':
             samples = samples.byteswap()
-        samples.newbyteorder('=')
+        samples.view(samples.dtype.newbyteorder('='))
 
         self.samples = samples
         self.framerate = framerate
